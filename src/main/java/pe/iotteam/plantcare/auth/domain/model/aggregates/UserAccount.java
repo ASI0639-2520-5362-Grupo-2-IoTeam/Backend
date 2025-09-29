@@ -11,15 +11,15 @@ public class UserAccount {
 
     private final UserId userId;
     private Email email;
-    private HashedPassword password;
+    private HashedPassword hashedPassword;
     private Role role;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public UserAccount(UserId userId, Email email, HashedPassword password, Role role) {
+    public UserAccount(UserId userId, Email email, HashedPassword hashedPassword, Role role) {
         this.userId = userId;
         this.email = email;
-        this.password = password;
+        this.hashedPassword = hashedPassword;
         this.role = role;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -27,13 +27,13 @@ public class UserAccount {
 
     public UserId getUserId() { return userId; }
     public Email getEmail() { return email; }
-    public HashedPassword getPassword() { return password; }
+    public HashedPassword getHashedPassword() { return hashedPassword; }
     public Role getRole() { return role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     public void changePassword(HashedPassword newPassword) {
-        this.password = newPassword;
+        this.hashedPassword = newPassword;
         this.updatedAt = LocalDateTime.now();
     }
 

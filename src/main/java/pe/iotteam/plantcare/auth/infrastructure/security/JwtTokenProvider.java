@@ -3,6 +3,7 @@ package pe.iotteam.plantcare.auth.infrastructure.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+import pe.iotteam.plantcare.auth.domain.model.entities.Role;
 
 import java.security.Key;
 import java.util.Date;
@@ -13,7 +14,7 @@ public class JwtTokenProvider {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long validityInMs = 3600000; // 1h
 
-    public String createToken(String username, String role) {
+    public String createToken(String username, Role role) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMs);
 

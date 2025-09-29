@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                         entity.getRole()
                 ))
                 .map(account -> org.springframework.security.core.userdetails.User
-                        .withUsername(account.getEmail().value())
+                        .withUsername(String.valueOf(account.getEmail().value()))
                         .password(account.getPassword().value())
                         .roles(account.getRole().name())
                         .build())
