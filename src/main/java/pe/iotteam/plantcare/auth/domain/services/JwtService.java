@@ -1,6 +1,6 @@
 package pe.iotteam.plantcare.auth.domain.services;
 
-import pe.iotteam.plantcare.auth.domain.model.aggregates.UserAccount;
+import pe.iotteam.plantcare.auth.domain.model.entities.UserAccount;
 import pe.iotteam.plantcare.auth.domain.model.valueobjects.JwtToken;
 
 public interface JwtService {

@@ -1,5 +1,7 @@
 package pe.iotteam.plantcare.auth.domain.model.aggregates;
 
+import pe.iotteam.plantcare.auth.domain.model.entities.UserAccount;
+
 import java.util.Optional;
 
 public interface UserAccountRepository {
