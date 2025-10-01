@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 ))
                 .map(account -> org.springframework.security.core.userdetails.User
                         .withUsername(String.valueOf(account.getEmail().value()))
-                        .password(account.getPassword().value())
+                        .password(account.getHashedPassword().value())
                         .roles(account.getRole().name())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

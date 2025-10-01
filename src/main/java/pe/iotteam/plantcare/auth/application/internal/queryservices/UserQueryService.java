@@ -18,6 +18,6 @@ public class UserQueryService {
     }
 
     public Optional<UserEntity> getUserByEmail(Email email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email.value());
     }
 }

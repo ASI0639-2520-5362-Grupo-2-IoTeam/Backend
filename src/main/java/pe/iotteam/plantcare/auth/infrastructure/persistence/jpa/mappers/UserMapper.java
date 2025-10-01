@@ -10,7 +10,6 @@ public class UserMapper {
 
     public static UserEntity toEntity(UserAccount user) {
         return new UserEntity(
-                user.getUserId().value(),
                 user.getEmail().value(),
                 user.getHashedPassword().value(),
                 user.getRole()

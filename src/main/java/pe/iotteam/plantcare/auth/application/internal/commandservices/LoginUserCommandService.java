@@ -35,7 +35,7 @@ public class LoginUserCommandService {
         // Generar el token JWT
         return jwtTokenProvider.createToken(
                 user.getEmail().value(),
-                user.getRole()
+                user.getRole().name()
         );
     }
 }

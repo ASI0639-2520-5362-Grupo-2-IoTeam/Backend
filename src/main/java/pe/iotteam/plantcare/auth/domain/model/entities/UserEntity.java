@@ -36,8 +36,7 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public UserEntity(UUID id, String email, String password, Role role) {
-        this.id = id;
+    public UserEntity(String email, String password, Role role) {
         this.email = email;
         this.password = password;
         this.role = role;
