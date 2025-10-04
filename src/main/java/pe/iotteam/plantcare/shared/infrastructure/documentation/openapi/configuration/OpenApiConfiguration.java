@@ -17,14 +17,14 @@ public class OpenApiConfiguration {
     var openApi = new OpenAPI();
     openApi
             .info(new Info()
-                    .title("MiCasita Platform API")
-                    .description("MiCasita Platform application REST API documentation.")
+                    .title("Plantcare API")
+                    .description("Plantcare Platform application REST API documentation.")
                     .version("v1.0.0")
                     .license(new License().name("Apache 2.0")
                             .url("https://springdoc.org")))
             .externalDocs(new ExternalDocumentation()
-                    .description("MiCasita Platform Documentation")
-                    .url("https://github.com/SI729-2401-WS53-Grupo-MiCasita/Documentation"));
+                    .description("Plantcare Platform Documentation")
+                    .url("https://github.com/ASI0639-2520-5362-Grupo-2-IoTeam/Documentation"));
     return openApi;
   }
 }
