@@ -35,7 +35,7 @@ public class PlantController {
 
     // Obtener planta por ID
     @GetMapping("/{plantId}")
-    public ResponseEntity<PlantResource> getById(@PathVariable UUID plantId) {
+    public ResponseEntity<PlantResource> getById(@PathVariable Long plantId) {
         var query = new GetPlantByIdQuery(plantId);
         return queryService.handle(query)
                 .map(PlantResourceFromEntityAssembler::toResource)
@@ -55,7 +55,7 @@ public class PlantController {
 
     // Actualizar planta
     @PutMapping("/{plantId}")
-    public ResponseEntity<PlantResource> updatePlant(@PathVariable UUID plantId,
+    public ResponseEntity<PlantResource> updatePlant(@PathVariable Long plantId,
                                                      @RequestBody UpdatePlantResource resource) {
         var command = UpdatePlantCommandFromResourceAssembler.toCommand(plantId, resource);
         var updatedPlant = commandService.handle(command);
@@ -64,7 +64,7 @@ public class PlantController {
 
     // Eliminar planta
     @DeleteMapping("/{plantId}")
-    public ResponseEntity<Void> deletePlant(@PathVariable UUID plantId) {
+    public ResponseEntity<Void> deletePlant(@PathVariable Long plantId) {
         var command = new DeletePlantCommand(plantId);
         commandService.handle(command);
         return ResponseEntity.noContent().build();

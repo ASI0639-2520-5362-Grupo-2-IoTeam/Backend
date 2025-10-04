@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface PlantJpaRepository extends JpaRepository<PlantEntity, UUID> {
+public interface PlantJpaRepository extends JpaRepository<PlantEntity, Long> {
 
-    Optional<PlantEntity> findById(UUID id);
+    Optional<PlantEntity> findById(Long id);
 
     List<PlantEntity> findByUserId_Value(UUID userId);
 }

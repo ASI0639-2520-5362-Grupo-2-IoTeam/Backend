@@ -6,7 +6,7 @@ import pe.iotteam.plantcare.plant.interfaces.rest.resources.PlantResource;
 public class PlantResourceFromEntityAssembler {
     public static PlantResource toResource(Plant plant) {
         return new PlantResource(
-                plant.getPlantId().value(),
+                plant.getId(),
                 plant.getUserId().value(),
                 plant.getName(),
                 plant.getType(),

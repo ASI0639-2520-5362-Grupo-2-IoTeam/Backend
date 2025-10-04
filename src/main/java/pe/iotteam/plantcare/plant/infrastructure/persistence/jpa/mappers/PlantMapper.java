@@ -2,13 +2,12 @@ package pe.iotteam.plantcare.plant.infrastructure.persistence.jpa.mappers;
 
 import pe.iotteam.plantcare.plant.domain.model.aggregates.Plant;
 import pe.iotteam.plantcare.plant.domain.model.entities.PlantEntity;
-import pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantId;
 
 public class PlantMapper {
 
     public static PlantEntity toEntity(Plant plant) {
         PlantEntity entity = new PlantEntity();
-        entity.setId(plant.getPlantId().value());
+        entity.setId(plant.getId());
         entity.setUserId(plant.getUserId());
         entity.setName(plant.getName());
         entity.setType(plant.getType());
@@ -26,16 +25,17 @@ public class PlantMapper {
     }
 
     public static Plant toAggregate(PlantEntity entity) {
-        Plant aggregate = new Plant(
-                new PlantId(entity.getId()),
+        return new Plant(
+                entity.getId(),
                 entity.getUserId(),
                 entity.getName(),
                 entity.getType(),
                 entity.getImgUrl(),
                 entity.getBio(),
-                entity.getLocation()
+                entity.getLocation(),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        aggregate.water();
-        return aggregate;
     }
 }

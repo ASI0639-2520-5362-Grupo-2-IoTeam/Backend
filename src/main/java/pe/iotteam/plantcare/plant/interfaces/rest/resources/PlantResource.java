@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlantResource {
-    private UUID id;
+    private Long id;
     private UUID userId;
     private String name;
     private String type;

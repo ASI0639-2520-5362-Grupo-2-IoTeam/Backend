@@ -1,10 +1,15 @@
 package pe.iotteam.plantcare.plant.domain.model.valueobjects;
 
-import java.util.UUID;
+import jakarta.persistence.Embeddable;
 import java.util.Objects;
+import java.util.UUID;
 
+@Embeddable
 public class UserId {
-    private final UUID value;
+
+    private UUID value;
+
+    protected UserId() {}
 
     public UserId(UUID value) {
         this.value = Objects.requireNonNull(value);

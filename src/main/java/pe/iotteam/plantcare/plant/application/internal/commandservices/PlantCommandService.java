@@ -24,7 +24,6 @@ public class PlantCommandService {
 
     public Plant handle(CreatePlantCommand command) {
         Plant plant = new Plant(
-                new PlantId(UUID.randomUUID()),
                 new UserId(command.userId()),
                 command.name(),
                 command.type(),
