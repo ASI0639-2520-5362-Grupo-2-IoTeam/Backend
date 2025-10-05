@@ -21,6 +21,9 @@ public class UserEntity {
     private UUID id;
 
     @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -36,11 +39,13 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public UserEntity(String email, String password, Role role) {
+    public UserEntity(String email, String username, String password, Role role) {
         this.email = email;
+        this.username = username;
         this.password = password;
         this.role = role;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
 }

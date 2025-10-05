@@ -26,13 +26,14 @@ public class RegisterUserCommandService {
     }
 
     @Transactional
-    public UserAccount handle(String email, String rawPassword, Role role) {
+    public UserAccount handle(String email, String username, String rawPassword, Role role) {
         String encoded = passwordEncoder.encode(rawPassword);
         HashedPassword hashed = new HashedPassword(encoded);
 
         UserAccount newUser = new UserAccount(
                 new UserId(UUID.randomUUID()),
                 new Email(email),
+                username,
                 hashed,
                 role
         );
@@ -42,5 +43,4 @@ public class RegisterUserCommandService {
 
         return UserMapper.toAggregate(savedEntity);
     }
-
 }

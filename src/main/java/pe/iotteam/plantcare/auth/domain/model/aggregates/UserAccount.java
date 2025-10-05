@@ -10,15 +10,17 @@ import java.time.LocalDateTime;
 public class UserAccount {
 
     private final UserId userId;
+    private String username;
     private Email email;
     private HashedPassword hashedPassword;
     private Role role;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public UserAccount(UserId userId, Email email, HashedPassword hashedPassword, Role role) {
+    public UserAccount(UserId userId, Email email, String username, HashedPassword hashedPassword, Role role) {
         this.userId = userId;
         this.email = email;
+        this.username = username;
         this.hashedPassword = hashedPassword;
         this.role = role;
         this.createdAt = LocalDateTime.now();
@@ -26,6 +28,7 @@ public class UserAccount {
     }
 
     public UserId getUserId() { return userId; }
+    public String getUsername() { return username; }
     public Email getEmail() { return email; }
     public HashedPassword getHashedPassword() { return hashedPassword; }
     public Role getRole() { return role; }

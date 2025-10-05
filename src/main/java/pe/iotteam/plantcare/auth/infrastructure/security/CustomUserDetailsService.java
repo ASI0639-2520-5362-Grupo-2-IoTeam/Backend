@@ -25,6 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(entity -> new UserAccount(
                         new UserId(entity.getId()),
                         new Email(entity.getEmail()),
+                        entity.getUsername(),
                         new HashedPassword(entity.getPassword()),
                         entity.getRole()
                 ))

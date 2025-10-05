@@ -11,6 +11,7 @@ public class UserMapper {
     public static UserEntity toEntity(UserAccount user) {
         return new UserEntity(
                 user.getEmail().value(),
+                user.getUsername(),
                 user.getHashedPassword().value(),
                 user.getRole()
         );
@@ -20,6 +21,7 @@ public class UserMapper {
         return new UserAccount(
                 new UserId(entity.getId()),
                 new Email(entity.getEmail()),
+                entity.getUsername(),
                 new HashedPassword(entity.getPassword()),
                 entity.getRole()
         );
