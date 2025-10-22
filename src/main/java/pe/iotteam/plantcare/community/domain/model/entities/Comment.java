@@ -1,6 +1,8 @@
 package pe.iotteam.plantcare.community.domain.model.entities;
 
 import jakarta.persistence.*;
+import pe.iotteam.plantcare.community.domain.model.aggregates.CommunityMember;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,12 +21,18 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "author_id", nullable = false)
+    private CommunityMember author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     protected Comment() {}
 
-    public Comment(String content) {
+    public Comment(CommunityMember author, Post post, String content) {
+        this.author = author;
+        this.post = post;
         this.content = content;
         this.createdAt = LocalDateTime.now();
     }
@@ -34,6 +42,7 @@ public class Comment {
     public String getContent() { return content; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public Post getPost() { return post; }
+    public CommunityMember getAuthor() { return author; }
 
     // Setters controlados
     public void setPost(Post post) {
