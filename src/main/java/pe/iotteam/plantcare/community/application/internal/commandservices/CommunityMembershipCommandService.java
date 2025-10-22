@@ -23,16 +23,13 @@ public class CommunityMembershipCommandService {
      * Registra un nuevo miembro en la comunidad con rol por defecto USER.
      */
     @Transactional
-    public CommunityMember registerMember(UUID userIdValue) {
-        UserId userId = new UserId(userIdValue);
-
-        // Evitar duplicados
-        Optional<CommunityMember> existing = communityMemberRepository.findByUserIdValue(userIdValue);
+    public CommunityMember registerMember(UUID userId, Role role) {
+        Optional<CommunityMember> existing = communityMemberRepository.findById(userId);
         if (existing.isPresent()) {
             throw new IllegalStateException("El usuario ya es miembro de la comunidad.");
         }
 
-        CommunityMember newMember = new CommunityMember(userId, Role.USER);
+        CommunityMember newMember = new CommunityMember(userId, role);
         return communityMemberRepository.save(newMember);
     }
 
@@ -41,7 +38,7 @@ public class CommunityMembershipCommandService {
      */
     @Transactional
     public CommunityMember promoteToAdmin(UUID userIdValue) {
-        CommunityMember member = communityMemberRepository.findByUserIdValue(userIdValue)
+        CommunityMember member = communityMemberRepository.findById(userIdValue)
                 .orElseThrow(() -> new IllegalArgumentException("Miembro no encontrado."));
 
         member.promoteToAdmin();
@@ -53,7 +50,7 @@ public class CommunityMembershipCommandService {
      */
     @Transactional
     public CommunityMember demoteToUser(UUID userIdValue) {
-        CommunityMember member = communityMemberRepository.findByUserIdValue(userIdValue)
+        CommunityMember member = communityMemberRepository.findById(userIdValue)
                 .orElseThrow(() -> new IllegalArgumentException("Miembro no encontrado."));
 
         member.demoteToMember();

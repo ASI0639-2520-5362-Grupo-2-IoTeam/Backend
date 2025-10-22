@@ -3,7 +3,6 @@ package pe.iotteam.plantcare.community.domain.model.aggregates;
 import jakarta.persistence.*;
 import pe.iotteam.plantcare.auth.domain.model.entities.Role;
 import pe.iotteam.plantcare.community.domain.model.entities.Post;
-import pe.iotteam.plantcare.community.domain.model.valueobjects.UserId;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,11 +14,8 @@ import java.util.UUID;
 public class CommunityMember {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
-
-    @Embedded
-    private UserId userId;
+    @Column(nullable = false, updatable = false, unique = true)
+    private UUID id; // ← mismo UUID del usuario
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -33,27 +29,21 @@ public class CommunityMember {
 
     protected CommunityMember() {}
 
-    public CommunityMember(UserId userId, Role role) {
-        this.userId = userId;
+    public CommunityMember(UUID userId, Role role) {
+        this.id = userId; // el mismo UUID del usuario
         this.role = role;
         this.joinedAt = LocalDateTime.now();
     }
 
     // Getters
     public UUID getId() { return id; }
-    public UserId getUserId() { return userId; }
     public Role getRole() { return role; }
     public LocalDateTime getJoinedAt() { return joinedAt; }
     public List<Post> getPosts() { return posts; }
 
     // Behavior
-    public void promoteToAdmin() {
-        this.role = Role.ADMIN;
-    }
-
-    public void demoteToMember() {
-        this.role = Role.USER;
-    }
+    public void promoteToAdmin() { this.role = Role.ADMIN; }
+    public void demoteToMember() { this.role = Role.USER; }
 
     public void addPost(Post post) {
         posts.add(post);
@@ -64,8 +54,8 @@ public class CommunityMember {
         posts.remove(post);
         post.setAuthor(null);
     }
+
     public boolean isAdmin() {
         return this.role == Role.ADMIN;
     }
-
 }

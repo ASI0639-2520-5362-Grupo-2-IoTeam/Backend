@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.iotteam.plantcare.community.domain.model.aggregates.CommunityMember;
 import pe.iotteam.plantcare.community.domain.model.entities.Comment;
 import pe.iotteam.plantcare.community.domain.model.entities.Post;
-import pe.iotteam.plantcare.community.domain.model.valueobjects.UserId;
 import pe.iotteam.plantcare.community.infrastructure.persistence.jpa.repositories.*;
 
 import java.util.UUID;
@@ -28,8 +27,8 @@ public class CommunityContentCommandService {
     }
 
     @Transactional
-    public Post createPost(UserId userId, String title, String content, String species, String tag) {
-        CommunityMember author = memberRepository.findByUserId(userId)
+    public Post createPost(UUID userId, String title, String content, String species, String tag) {
+        CommunityMember author = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         Post post = new Post(title, content, species, tag, author);
@@ -37,8 +36,8 @@ public class CommunityContentCommandService {
     }
 
     @Transactional
-    public Comment addComment(UserId userId, UUID postId, String text) {
-        CommunityMember author = memberRepository.findByUserId(userId)
+    public Comment addComment(UUID userId, Long postId, String text) {
+        CommunityMember author = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
 
         Post post = postRepository.findById(postId)
@@ -49,12 +48,13 @@ public class CommunityContentCommandService {
     }
 
     @Transactional
-    public void deleteOwnPost(UserId userId, UUID postId) {
+    public void deleteOwnPost(UUID userId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
-        if (!post.getAuthor().getUserId().equals(userId))
+
+        if (!post.getAuthor().getId().equals(userId))
             throw new RuntimeException("No autorizado para eliminar este post");
+
         postRepository.delete(post);
     }
 }
-

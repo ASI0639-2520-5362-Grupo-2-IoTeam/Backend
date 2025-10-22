@@ -13,11 +13,11 @@ import java.util.UUID;
 @Repository
 public interface CommunityMemberRepository extends JpaRepository<CommunityMember, UUID> {
 
-    Optional<CommunityMember> findByUserId(UserId userId);
+    // Buscar miembro por su mismo UUID
+    Optional<CommunityMember> findById(UUID id);
 
+    // Listar por rol
     List<CommunityMember> findByRole(Role role);
-
-    Optional<CommunityMember> findByUserIdValue(UUID value);
-
 }
+
 

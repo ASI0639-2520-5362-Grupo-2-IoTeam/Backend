@@ -13,8 +13,8 @@ import java.util.UUID;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
@@ -27,10 +27,10 @@ public class Post {
     private String content;
 
     @Column
-    private String species; // Nueva propiedad
+    private String species;
 
     @Column
-    private String tag; // Nueva propiedad
+    private String tag;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -56,7 +56,7 @@ public class Post {
     }
 
     // Getters
-    public UUID getId() { return id; }
+    public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getContent() { return content; }
     public String getSpecies() { return species; }

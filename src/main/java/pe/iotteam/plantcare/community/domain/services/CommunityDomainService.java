@@ -50,7 +50,7 @@ public class CommunityDomainService {
         if (member == null || post == null)
             throw new InvalidCommunityActionException("Miembro o publicación no válidos.");
 
-        boolean isOwner = post.getAuthor().getUserId().equals(member.getUserId());
+        boolean isOwner = post.getAuthor().getId().equals(member.getId());
 
         if (!member.isAdmin() && !isOwner)
             throw new InvalidCommunityActionException("No autorizado para eliminar esta publicación.");
@@ -65,7 +65,7 @@ public class CommunityDomainService {
         if (member == null || comment == null)
             throw new InvalidCommunityActionException("Miembro o comentario no válidos.");
 
-        boolean isOwner = comment.getAuthor().getUserId().equals(member.getUserId());
+        boolean isOwner = comment.getAuthor().getId().equals(member.getId());
 
         if (!member.isAdmin() && !isOwner)
             throw new InvalidCommunityActionException("No autorizado para eliminar este comentario.");

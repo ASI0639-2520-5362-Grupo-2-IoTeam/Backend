@@ -6,6 +6,7 @@ import pe.iotteam.plantcare.community.domain.model.entities.Post;
 import pe.iotteam.plantcare.community.domain.model.aggregates.CommunityMember;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -14,4 +15,6 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     List<Post> findAllByOrderByCreatedAtDesc();
 
     List<Post> findByAuthor(CommunityMember author);
+    Optional<Post> findById(Long id);
+
 }
