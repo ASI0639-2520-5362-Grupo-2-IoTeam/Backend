@@ -1,4 +1,4 @@
-package pe.iotteam.plantcare.auth.interfaces.rest.resources;
+package pe.iotteam.plantcare.auth.interfaces.rest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,7 @@ import pe.iotteam.plantcare.auth.interfaces.rest.transform.RegisterRequest;
 import pe.iotteam.plantcare.auth.interfaces.rest.transform.UserResponse;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final RegisterUserCommandService registerService;

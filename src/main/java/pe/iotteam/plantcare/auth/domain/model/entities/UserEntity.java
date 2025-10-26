@@ -47,5 +47,4 @@ public class UserEntity {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-
 }
