@@ -36,25 +36,22 @@ public class SubscriptionCommandService {
 
         var existingOpt = subscriptionRepository.findByUserId(userId);
 
-        // Caso 1: Usuario sin suscripción aún → crear nueva
         if (existingOpt.isEmpty()) {
             var plan = planRepository.findByType(newPlanType)
                     .orElseThrow(() -> new IllegalArgumentException("Plan no encontrado: " + newPlanType));
 
             var newSub = new Subscription(userId, plan);
             if (newPlanType == PlanType.NONE) {
-                newSub.cancel(); // queda inactiva si empieza sin plan
+                newSub.cancel();
             } else {
                 newSub.activate();
             }
             return subscriptionRepository.save(newSub);
         }
 
-        // Caso 2: Usuario ya tiene suscripción existente
         var existing = existingOpt.get();
         var currentPlanType = existing.getPlan().getType();
 
-        // Si el usuario pasa a NONE → cancelar la sub
         if (newPlanType == PlanType.NONE) {
             var nonePlan = planRepository.findByType(PlanType.NONE)
                     .orElseThrow(() -> new IllegalArgumentException("Plan NONE no encontrado"));
@@ -62,8 +59,6 @@ public class SubscriptionCommandService {
             existing.setPlan(nonePlan);
             return subscriptionRepository.save(existing);
         }
-
-        // Si el usuario tenía NONE y pasa a un plan pago → activar
         if (currentPlanType == PlanType.NONE && newPlanType != PlanType.NONE) {
             var newPlan = planRepository.findByType(newPlanType)
                     .orElseThrow(() -> new IllegalArgumentException("Plan no encontrado: " + newPlanType));
@@ -71,9 +66,6 @@ public class SubscriptionCommandService {
             existing.activate();
             return subscriptionRepository.save(existing);
         }
-
-        // Si el usuario ya tiene una suscripción activa (BASIC o PREMIUM)
-        // y solo está cambiando de plan (manteniendo activa)
         if (existing.isActive()) {
             var newPlan = planRepository.findByType(newPlanType)
                     .orElseThrow(() -> new IllegalArgumentException("Plan no encontrado: " + newPlanType));
@@ -81,7 +73,6 @@ public class SubscriptionCommandService {
             return subscriptionRepository.save(existing);
         }
 
-        // Si estaba cancelada pero no era NONE → reactivar con nuevo plan
         var plan = planRepository.findByType(newPlanType)
                 .orElseThrow(() -> new IllegalArgumentException("Plan no encontrado: " + newPlanType));
         existing.setPlan(plan);
