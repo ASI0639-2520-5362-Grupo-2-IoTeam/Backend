@@ -13,6 +13,7 @@ import pe.iotteam.plantcare.auth.interfaces.rest.transform.LoginRequest;
 import pe.iotteam.plantcare.auth.interfaces.rest.transform.LoginResponse;
 import pe.iotteam.plantcare.auth.interfaces.rest.transform.RegisterRequest;
 import pe.iotteam.plantcare.auth.interfaces.rest.transform.UserResponse;
+import pe.iotteam.plantcare.subscription.application.internal.commandservices.SubscriptionCommandService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -21,12 +22,15 @@ public class AuthController {
     private final RegisterUserCommandService registerService;
     private final LoginUserCommandService loginService;
     private final UserRepositoryJpa userRepository;
+    private final SubscriptionCommandService subscriptionService;
 
     public AuthController(RegisterUserCommandService registerService,
-                          LoginUserCommandService loginService, UserRepositoryJpa userRepository) {
+                          LoginUserCommandService loginService, UserRepositoryJpa userRepository,
+                          SubscriptionCommandService subscriptionService) {
         this.registerService = registerService;
         this.loginService = loginService;
         this.userRepository = userRepository;
+        this.subscriptionService = subscriptionService;
     }
 
     @PostMapping("/register")
@@ -37,6 +41,9 @@ public class AuthController {
                 request.password(),
                 request.role()
         );
+
+        // Crear suscripción inicial con plan NONE
+        subscriptionService.subscribeOrChangePlan(user.getUserId().value(), "NONE");
 
         return ResponseEntity.ok(new UserResponse(
                 user.getUserId().value().toString(),
