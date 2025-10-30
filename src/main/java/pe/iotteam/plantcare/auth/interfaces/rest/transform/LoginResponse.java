@@ -1,3 +1,5 @@
 package pe.iotteam.plantcare.auth.interfaces.rest.transform;
 
-public record LoginResponse(String token) {}
+import java.util.UUID;
+
+public record LoginResponse(String token, String username, UUID uuid) {}

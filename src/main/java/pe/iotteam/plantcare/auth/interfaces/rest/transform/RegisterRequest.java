@@ -2,4 +2,4 @@ package pe.iotteam.plantcare.auth.interfaces.rest.transform;
 
 import pe.iotteam.plantcare.auth.domain.model.entities.Role;
 
-public record RegisterRequest(String email, String password, Role role) {}
+public record RegisterRequest(String email, String username, String password, Role role) {}

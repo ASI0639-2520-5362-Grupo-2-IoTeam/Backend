@@ -5,6 +5,7 @@ import pe.iotteam.plantcare.auth.domain.model.valueobjects.Email;
 import pe.iotteam.plantcare.auth.infrastructure.persistence.jpa.mappers.UserMapper;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
@@ -13,6 +14,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     public UserRepositoryImpl(UserRepositoryJpa jpaRepository) {
         this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public Optional<UserAccount> findById(UUID userId) {
+        return jpaRepository.findById(userId)
+                .map(UserMapper::toAggregate);
     }
 
     @Override
