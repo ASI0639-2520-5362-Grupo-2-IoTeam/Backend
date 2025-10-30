@@ -17,7 +17,7 @@ public class Plan {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private PlanType type; // BASIC o PREMIUM
+    private PlanType type; // BASIC o PREMIUM o NONE
 
     @Column(nullable = false)
     private BigDecimal price;
