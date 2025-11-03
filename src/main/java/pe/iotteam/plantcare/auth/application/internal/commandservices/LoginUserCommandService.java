@@ -8,6 +8,7 @@ import pe.iotteam.plantcare.auth.domain.model.entities.Role;
 import pe.iotteam.plantcare.auth.domain.model.valueobjects.Email;
 import pe.iotteam.plantcare.auth.domain.model.valueobjects.HashedPassword;
 import pe.iotteam.plantcare.auth.domain.model.valueobjects.UserId;
+import pe.iotteam.plantcare.auth.infrastructure.oauth.google.services.GoogleMobileOAuthService;
 import pe.iotteam.plantcare.auth.infrastructure.oauth.google.services.GoogleOAuthService;
 import pe.iotteam.plantcare.auth.infrastructure.persistence.jpa.repositories.UserRepository;
 import pe.iotteam.plantcare.auth.infrastructure.persistence.jpa.repositories.UserRepositoryJpa;
@@ -22,15 +23,18 @@ public class LoginUserCommandService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final GoogleOAuthService googleOAuthService;
+    private final GoogleMobileOAuthService googleMobileOAuthService;
 
     public LoginUserCommandService(UserRepository userRepository,
                                    PasswordEncoder passwordEncoder,
                                    JwtTokenProvider jwtTokenProvider,
-                                   GoogleOAuthService googleOAuthService) {
+                                   GoogleOAuthService googleOAuthService,
+                                   GoogleMobileOAuthService googleMobileOAuthService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.googleOAuthService = googleOAuthService;
+        this.googleMobileOAuthService = googleMobileOAuthService;
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +97,57 @@ public class LoginUserCommandService {
 
         } catch (Exception e) {
             throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public String handleGoogleMobileSignIn(String googleIdToken) {
+        try {
+            // Verificar el token usando el servicio de Google
+            var payload = googleMobileOAuthService.verifyToken(googleIdToken);
+
+            // Validar email
+            String emailValue = payload.getEmail();
+            if (emailValue == null || emailValue.isBlank()) {
+                throw new IllegalArgumentException("El token de Google no contiene un correo electrónico válido");
+            }
+
+            Email email = new Email(emailValue);
+
+            // Buscar usuario existente
+            var existingUser = userRepository.findByEmail(email);
+
+            UserAccount userAccount;
+
+            if (existingUser.isPresent()) {
+                userAccount = existingUser.get();
+            } else {
+                // Crear nuevo usuario con datos mínimos
+                Role defaultRole = Role.USER;
+                UserId newUserId = new UserId(UUID.randomUUID());
+                String randomPassword = UUID.randomUUID().toString();
+                HashedPassword hashedPassword = new HashedPassword(passwordEncoder.encode(randomPassword));
+                String username = emailValue.split("@")[0]; // usa parte del email como username
+
+                userAccount = new UserAccount(
+                        newUserId,
+                        email,
+                        username,
+                        hashedPassword,
+                        defaultRole
+                );
+
+                userRepository.save(userAccount);
+            }
+
+            // Generar y devolver el JWT
+            return jwtTokenProvider.createToken(
+                    userAccount.getEmail().value(),
+                    userAccount.getRole().name()
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al autenticar con Google Mobile: " + e.getMessage(), e);
         }
     }
 

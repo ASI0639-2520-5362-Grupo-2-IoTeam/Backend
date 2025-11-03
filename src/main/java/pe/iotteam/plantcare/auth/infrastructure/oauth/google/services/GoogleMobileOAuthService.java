@@ -4,19 +4,16 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
+
 
 import java.util.Collections;
 
-/**
- * Google OAuth Service
- * This service handles Google OAuth token verification
- */
-
 @Service
-public class GoogleOAuthService {
+public class GoogleMobileOAuthService {
+
     @Value("${google.oauth2.client-id}")
     private String clientId;
 
@@ -24,23 +21,34 @@ public class GoogleOAuthService {
 
     @PostConstruct
     public void init() {
-        verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
+        verifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(),
+                GsonFactory.getDefaultInstance()
+        )
                 .setAudience(Collections.singletonList(clientId))
                 .build();
     }
 
-    public GoogleIdToken.Payload verifyToken(String tokenString) throws Exception {
-        GoogleIdToken idToken = verifier.verify(tokenString);
+    /**
+     * Verifies the ID token received from the mobile client
+     * @param idTokenString The ID token string
+     * @return The verified payload containing user data
+     * @throws Exception if the token is invalid, expired, or email is not verified
+     */
+    public GoogleIdToken.Payload verifyToken(String idTokenString) throws Exception {
+        GoogleIdToken idToken = verifier.verify(idTokenString);
+
         if (idToken != null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
 
-            if (!payload.getEmailVerified()) {
-                throw new RuntimeException("Google email not verified");
+            if (!Boolean.TRUE.equals(payload.getEmailVerified())) {
+                throw new RuntimeException("Correo no verificado por Google");
             }
 
             return payload;
         }
-        throw new RuntimeException("Invalid Google token");
+
+        throw new RuntimeException("Token inválido o expirado");
     }
 
     /**
@@ -59,7 +67,7 @@ public class GoogleOAuthService {
     }
 
     /**
-     * Inner class to represent Google user information
+     * Inner class representing Google user info
      */
     public static class GoogleUserInfo {
         private final String email;
