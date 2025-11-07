@@ -62,6 +62,15 @@ public class PlantController {
         return ResponseEntity.ok(PlantResourceFromEntityAssembler.toResource(updatedPlant));
     }
 
+    // Actualizar métricas de la planta
+    @PostMapping("/{plantId}/metrics")
+    public ResponseEntity<PlantResource> updatePlantMetrics(@PathVariable Long plantId,
+                                                            @RequestBody UpdatePlantMetricsResource resource) {
+        var command = UpdatePlantMetricsCommandFromResourceAssembler.toCommand(plantId, resource);
+        var updatedPlant = commandService.handle(command);
+        return ResponseEntity.ok(PlantResourceFromEntityAssembler.toResource(updatedPlant));
+    }
+
     // Eliminar planta
     @DeleteMapping("/{plantId}")
     public ResponseEntity<Void> deletePlant(@PathVariable Long plantId) {

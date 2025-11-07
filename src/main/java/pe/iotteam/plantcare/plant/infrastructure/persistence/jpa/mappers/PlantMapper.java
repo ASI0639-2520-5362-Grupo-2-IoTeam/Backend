@@ -21,6 +21,10 @@ public class PlantMapper {
             entity.setLastWatered(plant.getLastWatered().toString());
         if (plant.getNextWatering() != null)
             entity.setNextWatering(plant.getNextWatering().toString());
+        entity.setTemperature(plant.getTemperature());
+        entity.setHumidity(plant.getHumidity());
+        entity.setLight(plant.getLight());
+        entity.setSoil_humidity(plant.getSoil_humidity());
         return entity;
     }
 
@@ -35,7 +39,11 @@ public class PlantMapper {
                 entity.getLocation(),
                 entity.getStatus(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                entity.getTemperature(),
+                entity.getHumidity(),
+                entity.getLight(),
+                entity.getSoil_humidity()
         );
     }
 }

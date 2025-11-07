@@ -49,6 +49,10 @@ public class PlantEntity {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    private Integer temperature;
+    private Integer light;
+    private Integer soil_humidity;
+
     public PlantEntity(UserId userId, String name, String type, String imgUrl,
                        PlantStatus status, String bio, String location) {
         this.userId = userId;

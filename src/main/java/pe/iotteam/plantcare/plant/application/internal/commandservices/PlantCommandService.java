@@ -6,6 +6,7 @@ import pe.iotteam.plantcare.plant.domain.model.aggregates.Plant;
 import pe.iotteam.plantcare.plant.domain.model.commands.CreatePlantCommand;
 import pe.iotteam.plantcare.plant.domain.model.commands.UpdatePlantCommand;
 import pe.iotteam.plantcare.plant.domain.model.commands.DeletePlantCommand;
+import pe.iotteam.plantcare.plant.domain.model.commands.UpdatePlantMetricsCommand;
 import pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantId;
 import pe.iotteam.plantcare.plant.domain.model.valueobjects.UserId;
 import pe.iotteam.plantcare.plant.infrastructure.persistence.jpa.repositories.PlantRepository;
@@ -42,6 +43,17 @@ public class PlantCommandService {
 
         Plant plant = plantOpt.get();
         plant.update(command);
+        return plantRepository.save(plant);
+    }
+
+    public Plant handle(UpdatePlantMetricsCommand command) {
+        var plantOpt = plantRepository.findById(new PlantId(command.id()));
+        if (plantOpt.isEmpty()) {
+            throw new RuntimeException("Plant not found");
+        }
+
+        Plant plant = plantOpt.get();
+        plant.updateMetrics(command);
         return plantRepository.save(plant);
     }
 

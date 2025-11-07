@@ -17,7 +17,11 @@ public class PlantResourceFromEntityAssembler {
                 plant.getLastWatered(),
                 plant.getNextWatering(),
                 plant.getCreatedAt(),
-                plant.getUpdatedAt()
+                plant.getUpdatedAt(),
+                plant.getTemperature(),
+                plant.getHumidity(),
+                plant.getLight(),
+                plant.getSoil_humidity()
         );
     }
 }

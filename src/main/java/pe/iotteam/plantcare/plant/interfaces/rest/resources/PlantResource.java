@@ -26,4 +26,8 @@ public class PlantResource {
     private LocalDateTime nextWatering;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer temperature;
+    private Double humidity;
+    private Integer light;
+    private Integer soil_humidity;
 }
