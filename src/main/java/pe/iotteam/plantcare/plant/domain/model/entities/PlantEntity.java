@@ -4,11 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pe.iotteam.plantcare.plant.domain.model.valueobjects.UserId;
-import pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "plants")
@@ -21,8 +18,8 @@ public class PlantEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private UserId userId;
+    @Column(nullable = false)
+    private String userId;
 
     @Column(nullable = false)
     private String name;
@@ -32,14 +29,11 @@ public class PlantEntity {
 
     private String imgUrl;
 
-    private Double humidity;
+    private LocalDateTime lastWatered;
+    private LocalDateTime nextWatering;
 
-    private String lastWatered;
-    private String nextWatering;
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PlantStatus status;
+    private String status;
 
     @Column(length = 1000)
     private String bio;
@@ -49,12 +43,8 @@ public class PlantEntity {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    private Integer temperature;
-    private Integer light;
-    private Integer soil_humidity;
-
-    public PlantEntity(UserId userId, String name, String type, String imgUrl,
-                       PlantStatus status, String bio, String location) {
+    public PlantEntity(String userId, String name, String type, String imgUrl,
+                       String status, String bio, String location) {
         this.userId = userId;
         this.name = name;
         this.type = type;

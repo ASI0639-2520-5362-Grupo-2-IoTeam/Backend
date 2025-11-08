@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlantResource {
+public class PlantWithTelemetryResource {
     private Long id;
     private UUID userId;
     private String name;
@@ -26,4 +26,9 @@ public class PlantResource {
     private LocalDateTime nextWatering;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer temperature;
+    private Double humidity;
+    private Integer light;
+    private Integer soil_humidity;
+    private String deviceId;
 }

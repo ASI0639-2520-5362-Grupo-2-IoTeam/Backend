@@ -8,6 +8,7 @@ import pe.iotteam.plantcare.plant.infrastructure.persistence.jpa.mappers.PlantMa
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public class PlantRepositoryImpl implements PlantRepository {
@@ -21,26 +22,27 @@ public class PlantRepositoryImpl implements PlantRepository {
     @Override
     public Optional<Plant> findById(PlantId id) {
         return jpaRepository.findById(id.value())
-                .map(PlantMapper::toAggregate);
+                .map(PlantMapper::toDomain);
     }
 
     @Override
     public List<Plant> findByUserId(UUID userId) {
-        return jpaRepository.findByUserId_Value(userId)
+        return jpaRepository.findByUserId(userId.toString())
                 .stream()
-                .map(PlantMapper::toAggregate)
-                .toList();
+                .map(PlantMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Plant save(Plant plant) {
         var entity = PlantMapper.toEntity(plant);
         var saved = jpaRepository.save(entity);
-        return PlantMapper.toAggregate(saved);
+        return PlantMapper.toDomain(saved);
     }
 
     @Override
     public void delete(PlantId id) {
         jpaRepository.deleteById(id.value());
     }
+
 }
