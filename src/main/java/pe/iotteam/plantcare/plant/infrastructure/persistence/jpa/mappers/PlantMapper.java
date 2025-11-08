@@ -2,15 +2,19 @@ package pe.iotteam.plantcare.plant.infrastructure.persistence.jpa.mappers;
 
 import pe.iotteam.plantcare.plant.domain.model.aggregates.Plant;
 import pe.iotteam.plantcare.plant.domain.model.entities.PlantEntity;
+import pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantStatus;
 import pe.iotteam.plantcare.plant.domain.model.valueobjects.UserId;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class PlantMapper {
 
-    public static PlantEntity toEntity(Plant plant) {
-        PlantEntity entity = new PlantEntity();
-        entity.setId(plant.getId());
+    /**
+     * Updates an existing PlantEntity with data from a Plant domain object.
+     * This method is crucial for correctly handling updates to collections.
+     */
+    public static void updateEntityFromDomain(PlantEntity entity, Plant plant) {
         entity.setUserId(plant.getUserId().value().toString());
         entity.setName(plant.getName());
         entity.setType(plant.getType());
@@ -18,13 +22,17 @@ public class PlantMapper {
         entity.setBio(plant.getBio());
         entity.setLocation(plant.getLocation());
         entity.setStatus(plant.getStatus().name());
-        entity.setCreatedAt(plant.getCreatedAt());
+        entity.setLastWatered(plant.getLastWatered());
+        entity.setNextWatering(plant.getNextWatering());
         entity.setUpdatedAt(plant.getUpdatedAt());
-        if (plant.getLastWatered() != null)
-            entity.setLastWatered(plant.getLastWatered());
-        if (plant.getNextWatering() != null)
-            entity.setNextWatering(plant.getNextWatering());
-        return entity;
+
+        // Correctly synchronize the watering logs collection
+        var newLogs = plant.getWateringLogs().stream()
+                .filter(log -> log.getId() == null) // Filter for new logs only
+                .map(log -> WateringLogMapper.toEntity(log, entity))
+                .collect(Collectors.toList());
+
+        entity.getWateringLogs().addAll(newLogs);
     }
 
     public static Plant toDomain(PlantEntity entity) {
@@ -36,9 +44,13 @@ public class PlantMapper {
                 entity.getImgUrl(),
                 entity.getBio(),
                 entity.getLocation(),
-                pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantStatus.valueOf(entity.getStatus()),
+                PlantStatus.valueOf(entity.getStatus()),
+                entity.getLastWatered(),
+                entity.getNextWatering(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                entity.getMetrics().stream().map(PlantMetricsMapper::toDomain).collect(Collectors.toList()),
+                entity.getWateringLogs().stream().map(WateringLogMapper::toDomain).collect(Collectors.toList())
         );
     }
 }

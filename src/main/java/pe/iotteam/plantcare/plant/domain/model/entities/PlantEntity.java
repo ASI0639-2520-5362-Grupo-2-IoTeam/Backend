@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "plants")
@@ -29,9 +31,6 @@ public class PlantEntity {
 
     private String imgUrl;
 
-    private LocalDateTime lastWatered;
-    private LocalDateTime nextWatering;
-
     @Column(nullable = false)
     private String status;
 
@@ -39,6 +38,15 @@ public class PlantEntity {
     private String bio;
 
     private String location;
+
+    private LocalDateTime lastWatered;
+    private LocalDateTime nextWatering;
+
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlantMetricsEntity> metrics = new ArrayList<>();
+
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WateringLogEntity> wateringLogs = new ArrayList<>();
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
