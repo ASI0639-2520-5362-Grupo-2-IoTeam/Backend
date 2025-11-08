@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// Añadidos para logging
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/v1/plants")
 public class PlantController {
@@ -29,6 +33,8 @@ public class PlantController {
 
     @Value("${edge.service.base-url}")
     private String edgeServiceUrl;
+
+    private static final Logger log = LoggerFactory.getLogger(PlantController.class);
 
     public PlantController(PlantCommandService commandService, PlantQueryService queryService, RestTemplate restTemplate) {
         this.commandService = commandService;
@@ -80,12 +86,14 @@ public class PlantController {
     // Obtener plantas por usuario con estado calculado
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PlantResource>> getByUserId(@PathVariable UUID userId) {
+        log.debug("GET /api/v1/plants/user/{} called", userId);
         // 1. Obtener datos de telemetría en vivo (una sola vez)
         ResponseEntity<SensorData[]> response = restTemplate.getForEntity(edgeServiceUrl, SensorData[].class);
         SensorData latestSensorData = response.getBody() != null && response.getBody().length > 0 ? response.getBody()[0] : new SensorData();
 
         // 2. Obtener todas las plantas del usuario
         var plants = queryService.handleFindByUser(userId);
+        log.debug("queryService.handleFindByUser returned {} plants for userId={}", plants.size(), userId);
 
         // 3. Para cada planta, añadir la telemetría y calcular el estado
         var resources = plants.stream()
@@ -105,6 +113,13 @@ public class PlantController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(resources);
+    }
+
+    // Ruta adicional compatible con la convención /api/v1/users/{userId}/plants
+    @GetMapping(path = "/users/{userId}/plants")
+    public ResponseEntity<List<PlantResource>> getByUserIdAlternate(@PathVariable UUID userId) {
+        log.debug("GET /api/v1/users/{}/plants called - delegating to /api/v1/plants/user/{}", userId, userId);
+        return getByUserId(userId);
     }
 
     // Actualizar planta

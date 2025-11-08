@@ -36,6 +36,8 @@ public class PlantRepositoryImpl implements PlantRepository {
         log.debug("PlantRepositoryImpl.findByUserId called with userId={}", userId);
         var entities = jpaRepository.findByUserId(userId.toString());
         log.debug("PlantJpaRepository.findByUserId returned {} entities for userId={}", entities.size(), userId);
+        // Log each found entity's id and stored userId string for debugging
+        entities.forEach(e -> log.debug("Found entity: id={} userIdInDb={}", e.getId(), e.getUserId()));
         return entities.stream()
                 .map(PlantMapper::toDomain)
                 .collect(Collectors.toList());
