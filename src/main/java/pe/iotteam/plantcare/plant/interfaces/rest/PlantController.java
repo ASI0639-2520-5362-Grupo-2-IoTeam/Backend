@@ -1,7 +1,9 @@
 package pe.iotteam.plantcare.plant.interfaces.rest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import pe.iotteam.plantcare.plant.application.internal.commandservices.PlantCommandService;
 import pe.iotteam.plantcare.plant.application.internal.queryservices.PlantQueryService;
 import pe.iotteam.plantcare.plant.domain.model.commands.DeletePlantCommand;
@@ -19,10 +21,15 @@ public class PlantController {
 
     private final PlantCommandService commandService;
     private final PlantQueryService queryService;
+    private final RestTemplate restTemplate;
 
-    public PlantController(PlantCommandService commandService, PlantQueryService queryService) {
+    @Value("${edge.service.base-url}")
+    private String edgeServiceUrl;
+
+    public PlantController(PlantCommandService commandService, PlantQueryService queryService, RestTemplate restTemplate) {
         this.commandService = commandService;
         this.queryService = queryService;
+        this.restTemplate = restTemplate;
     }
 
     // Crear planta
@@ -35,11 +42,15 @@ public class PlantController {
 
     // Obtener planta por ID
     @GetMapping("/{plantId}")
-    public ResponseEntity<PlantResource> getById(@PathVariable Long plantId) {
+    public ResponseEntity<PlantWithTelemetryResource> getById(@PathVariable Long plantId) {
         var query = new GetPlantByIdQuery(plantId);
         return queryService.handle(query)
-                .map(PlantResourceFromEntityAssembler::toResource)
-                .map(ResponseEntity::ok)
+                .map(plant -> {
+                    ResponseEntity<SensorData[]> response = restTemplate.getForEntity(edgeServiceUrl, SensorData[].class);
+                    SensorData latestSensorData = response.getBody() != null && response.getBody().length > 0 ? response.getBody()[0] : new SensorData();
+                    var resource = PlantWithTelemetryResourceFromEntityAssembler.toResource(plant, latestSensorData.getTemperature(), latestSensorData.getHumidity(), latestSensorData.getLight(), latestSensorData.getSoilHumidity(), latestSensorData.getDeviceId());
+                    return ResponseEntity.ok(resource);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -69,6 +80,4 @@ public class PlantController {
         commandService.handle(command);
         return ResponseEntity.noContent().build();
     }
-
-
 }
