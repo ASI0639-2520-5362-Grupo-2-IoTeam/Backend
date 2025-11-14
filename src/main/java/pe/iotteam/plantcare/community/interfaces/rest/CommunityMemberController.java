@@ -6,43 +6,99 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.iotteam.plantcare.community.application.internal.commandservices.CommunityContentCommandService;
-import pe.iotteam.plantcare.community.domain.model.entities.Comment;
+import pe.iotteam.plantcare.auth.domain.model.aggregates.UserAccount;
+import pe.iotteam.plantcare.auth.domain.model.entities.Role;
+import pe.iotteam.plantcare.auth.infrastructure.persistence.jpa.repositories.UserRepository;
+import pe.iotteam.plantcare.community.application.internal.commandservices.CommunityMembershipCommandService;
+import pe.iotteam.plantcare.community.domain.model.aggregates.CommunityMember;
+import pe.iotteam.plantcare.community.infrastructure.persistence.jpa.repositories.CommunityMemberRepository;
+import pe.iotteam.plantcare.community.interfaces.rest.transform.CommunityMemberResourceAssembler;
+import pe.iotteam.plantcare.community.interfaces.rest.resources.CommunityMemberResource;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/community/comments")
+@RequestMapping("/api/community/members")
 @Tag(
-        name = "Community Comments",
-        description = "Endpoints para gestionar comentarios realizados por los usuarios dentro de la comunidad."
+        name = "Community Members",
+        description = "Gestión de miembros dentro de la comunidad, incluyendo registro y obtención del listado de miembros."
 )
-public class CommentController {
+public class CommunityMemberController {
 
-    private final CommunityContentCommandService contentCommandService;
+    private final CommunityMembershipCommandService membershipCommandService;
+    private final CommunityMemberRepository memberRepository;
+    private final UserRepository userRepository;
 
-    public CommentController(CommunityContentCommandService contentCommandService) {
-        this.contentCommandService = contentCommandService;
+    public CommunityMemberController(
+            CommunityMembershipCommandService membershipCommandService,
+            CommunityMemberRepository memberRepository, UserRepository userRepository) {
+        this.membershipCommandService = membershipCommandService;
+        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
     }
 
+    /**
+     * Registra un nuevo miembro con rol USER por defecto
+     */
     @Operation(
-            summary = "Agregar un comentario a un post",
-            description = "Permite que un usuario registrado agregue un comentario a un post existente dentro de la comunidad. "
-                    + "El comentario queda asociado tanto al usuario como al post indicado."
+            summary = "Registrar un nuevo miembro de la comunidad",
+            description = "Crea un nuevo registro de miembro para el usuario especificado. "
+                    + "El rol asignado por defecto será el del usuario en el sistema (usualmente USER)."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comentario agregado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida o parámetros faltantes"),
-            @ApiResponse(responseCode = "404", description = "El usuario o el post no existen"),
-            @ApiResponse(responseCode = "403", description = "El usuario no tiene permiso para comentar")
+            @ApiResponse(responseCode = "200", description = "Miembro registrado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida o usuario no encontrado")
     })
     @PostMapping
-    public ResponseEntity<Comment> addComment(
-            @RequestParam UUID userId,
-            @RequestParam Long postId,
-            @RequestParam String text
+    public ResponseEntity<CommunityMemberResource> registerMember(
+            @RequestParam UUID userId
     ) {
-        Comment comment = contentCommandService.addComment(userId, postId, text);
-        return ResponseEntity.ok(comment);
+        // obtener rol del usuario usando el UserRepository
+        Role role = userRepository.findById(userId)
+                .map(UserAccount::getRole)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+
+        CommunityMember member = membershipCommandService.registerMember(userId, role);
+        return ResponseEntity.ok(CommunityMemberResourceAssembler.toResource(member));
+    }
+
+
+    //Cuando se añadan moderadores como rol opcion. Para el TF
+    /**
+     * Promueve un miembro a ADMIN
+
+     @PostMapping("/{userId}/promote")
+     public ResponseEntity<CommunityMemberResource> promoteToAdmin(@PathVariable UUID userId) {
+     CommunityMember member = membershipCommandService.promoteToAdmin(userId);
+     return ResponseEntity.ok(CommunityMemberResourceAssembler.toResource(member));
+     }*/
+
+    /**
+     * Degrada un miembro a USER
+     *
+     @PostMapping("/{userId}/demote")
+     public ResponseEntity<CommunityMemberResource> demoteToUser(@PathVariable UUID userId) {
+     CommunityMember member = membershipCommandService.demoteToUser(userId);
+     return ResponseEntity.ok(CommunityMemberResourceAssembler.toResource(member));
+     }*/
+
+    /**
+     * Lista todos los miembros registrados
+     */
+    @Operation(
+            summary = "Listar todos los miembros registrados",
+            description = "Devuelve la lista completa de miembros pertenecientes a la comunidad."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de miembros obtenida exitosamente")
+    })
+    @GetMapping
+    public ResponseEntity<List<CommunityMemberResource>> listMembers() {
+        var members = memberRepository.findAll()
+                .stream()
+                .map(CommunityMemberResourceAssembler::toResource)
+                .toList();
+        return ResponseEntity.ok(members);
     }
 }
