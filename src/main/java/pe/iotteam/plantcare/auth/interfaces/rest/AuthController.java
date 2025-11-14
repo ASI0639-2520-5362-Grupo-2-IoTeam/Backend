@@ -1,5 +1,9 @@
 package pe.iotteam.plantcare.auth.interfaces.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +21,10 @@ import pe.iotteam.plantcare.subscription.application.internal.commandservices.Su
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(
+        name = "Authentication",
+        description = "Endpoints responsables del registro, autenticación y generación de tokens para los usuarios."
+)
 public class AuthController {
 
     private final RegisterUserCommandService registerService;
@@ -32,7 +40,16 @@ public class AuthController {
         this.userRepository = userRepository;
         this.subscriptionService = subscriptionService;
     }
-
+    @Operation(
+            summary = "Registrar un nuevo usuario",
+            description = "Crea un nuevo usuario dentro del sistema utilizando correo, nombre de usuario, contraseña y rol. "
+                    + "Después del registro, se genera automáticamente una suscripción inicial con plan 'NONE'."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario registrado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos enviados en la solicitud"),
+            @ApiResponse(responseCode = "409", description = "El email ya está registrado en el sistema")
+    })
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
         UserAccount user = registerService.handle(
@@ -52,7 +69,16 @@ public class AuthController {
                 user.getRole()
         ));
     }
-
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Autentica a un usuario usando email y contraseña, devolviendo un token JWT válido "
+                    + "junto con información básica del usuario."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas o usuario no autorizado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         var user = userRepository.findByEmail(request.email())
