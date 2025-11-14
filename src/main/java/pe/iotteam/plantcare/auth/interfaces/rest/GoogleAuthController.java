@@ -18,7 +18,7 @@ import pe.iotteam.plantcare.auth.interfaces.rest.resources.UserDto;
 import pe.iotteam.plantcare.auth.interfaces.rest.transform.GoogleSignInCommandFromResourceAssembler;
 
 @RestController
-@RequestMapping(value = "/api/v1/auth/google")
+@RequestMapping(value = "/api/v1/authentication/google")
 @Tag(name = "Google Authentication", description = "Google Authentication Endpoints")
 public class GoogleAuthController {
     private final LoginUserCommandService loginUserCommandService;
@@ -33,10 +33,10 @@ public class GoogleAuthController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/web")
+    @PostMapping("/signin")
     @Operation(
-            summary = "Iniciar sesión con Google (Web)",
-            description = "Autentica mediante OAuth Web de Google."
+            summary = "Iniciar sesión con Google",
+            description = "Autentica mediante OAuth de Google."
     )
     public ResponseEntity<?> signInWithGoogle(@Valid @RequestBody GoogleSignInResource resource) {
         try {
@@ -47,42 +47,6 @@ public class GoogleAuthController {
             String jwt = loginUserCommandService.handleGoogleSignIn(command.googleToken());
 
             // recuperar email desde el token para buscar el usuario
-            String email = jwtTokenProvider.getUsername(jwt);
-            var userOpt = userRepository.findByEmail(new Email(email));
-            if (userOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("User created but not found after creation");
-            }
-
-            var user = userOpt.get();
-            String id = user.getUserId() != null ? user.getUserId().toString() : null;
-
-            UserDto userDto = new UserDto(id, user.getEmail().value(), user.getUsername(), user.getRole().name());
-            AuthResponse response = new AuthResponse(jwt, "Bearer", userDto);
-
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Bad request: " + e.getMessage());
-        }
-    }
-
-
-    @PostMapping("/mobile")
-    @Operation(
-            summary = "Iniciar sesión con Google (Mobile)",
-            description = "Autentica mediante token de Google Sign-In."
-    )
-    public ResponseEntity<?> signInWithGoogleMobile(@Valid @RequestBody GoogleSignInResource resource) {
-        try {
-            var command = GoogleSignInCommandFromResourceAssembler.toCommandFromResource(resource);
-
-            String jwt = loginUserCommandService.handleGoogleMobileSignIn(command.googleToken());
-
             String email = jwtTokenProvider.getUsername(jwt);
             var userOpt = userRepository.findByEmail(new Email(email));
             if (userOpt.isEmpty()) {
