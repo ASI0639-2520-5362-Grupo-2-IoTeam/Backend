@@ -30,11 +30,11 @@ import java.util.List;
 
 /**
  * REST Controller for Analytics Bounded Context
- * Provides endpoints for sensor data ingestion and queries
+ * Provides endpoints for sensor data import and queries
  */
 @RestController
 @RequestMapping("/api/v1/analytics")
-@Tag(name = "Analytics", description = "Analytics API for sensor data ingestion and querying")
+@Tag(name = "Analytics", description = "Analytics API for sensor data import and querying")
 public class AnalyticsController {
 
     private static final Logger log = LoggerFactory.getLogger(AnalyticsController.class);
@@ -49,29 +49,29 @@ public class AnalyticsController {
     }
 
     /**
-     * Trigger manual data ingestion from external API
-     * POST /api/v1/analytics/ingest
+     * Trigger manual data import from external API
+     * POST /api/v1/analytics/imports
      */
-    @PostMapping("/ingest")
+    @PostMapping("/imports")
     @Operation(
-            summary = "Trigger data ingestion",
-            description = "Manually trigger ingestion of sensor data from external Edge Service API. Only new records will be ingested (incremental)."
+            summary = "Import sensor data",
+            description = "Import sensor data from external Edge Service API. Only new records will be imported (incremental import)."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ingestion completed successfully",
+            @ApiResponse(responseCode = "200", description = "Import completed successfully",
                     content = @Content(schema = @Schema(implementation = IngestionResultResource.class))),
-            @ApiResponse(responseCode = "500", description = "Ingestion failed",
+            @ApiResponse(responseCode = "500", description = "Import failed",
                     content = @Content(schema = @Schema(implementation = IngestionResultResource.class)))
     })
-    public ResponseEntity<IngestionResultResource> ingestData() {
-        log.info("Manual data ingestion triggered via API");
+    public ResponseEntity<IngestionResultResource> importSensorData() {
+        log.info("Manual data import triggered via API");
         
         try {
             int recordsIngested = ingestionService.handle(new IngestSensorDataCommand());
             return ResponseEntity.ok(IngestionResultResource.success(recordsIngested));
             
         } catch (DataIngestionException e) {
-            log.error("Data ingestion failed: {}", e.getMessage());
+            log.error("Data import failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(IngestionResultResource.failure(e.getMessage()));
         }
@@ -79,82 +79,73 @@ public class AnalyticsController {
 
     /**
      * Get all sensor data records
-     * GET /api/v1/analytics/sensor-data
+     * GET /api/v1/analytics/data
+     * 
+     * Supports optional query parameters for filtering:
+     * - start: Filter by start date
+     * - end: Filter by end date
      */
-    @GetMapping("/sensor-data")
+    @GetMapping("/data")
     @Operation(
-            summary = "Get all sensor data",
-            description = "Retrieve all sensor data records from the analytics database, ordered by creation date (most recent first)."
+            summary = "Get sensor data",
+            description = "Retrieve sensor data records from analytics database. Supports optional date range filtering via query parameters."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data"),
+            @ApiResponse(responseCode = "400", description = "Invalid query parameters")
     })
-    public ResponseEntity<List<SensorDataResource>> getAllSensorData() {
-        log.debug("Retrieving all sensor data");
+    public ResponseEntity<List<SensorDataResource>> getSensorData(
+            @Parameter(description = "Start date for filtering (optional, ISO format)", example = "2025-11-01T00:00:00")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            
+            @Parameter(description = "End date for filtering (optional, ISO format)", example = "2025-11-13T23:59:59")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         
-        List<SensorDataRecord> records = queryService.handle(new GetAllSensorDataQuery());
-        List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
+        log.debug("Retrieving sensor data with filters - start: {}, end: {}", start, end);
         
-        return ResponseEntity.ok(resources);
+        try {
+            List<SensorDataRecord> records;
+            
+            // If both dates provided, filter by date range
+            if (start != null && end != null) {
+                records = queryService.handle(new GetSensorDataByDateRangeQuery(start, end));
+            } 
+            // Otherwise, get all records
+            else {
+                records = queryService.handle(new GetAllSensorDataQuery());
+            }
+            
+            List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
+            return ResponseEntity.ok(resources);
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid query parameters: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
-     * Get sensor data by device ID
-     * GET /api/v1/analytics/sensor-data/device/{deviceId}
+     * Get sensor data for a specific device (sub-resource pattern)
+     * GET /api/v1/analytics/devices/{deviceId}/data
      */
-    @GetMapping("/sensor-data/device/{deviceId}")
+    @GetMapping("/devices/{deviceId}/data")
     @Operation(
-            summary = "Get sensor data by device ID",
+            summary = "Get sensor data for a device",
             description = "Retrieve all sensor data records for a specific device."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data"),
-            @ApiResponse(responseCode = "404", description = "No data found for the specified device")
+            @ApiResponse(responseCode = "404", description = "Device not found or no data available")
     })
-    public ResponseEntity<List<SensorDataResource>> getSensorDataByDevice(
-            @Parameter(description = "Device ID", example = "device_001")
+    public ResponseEntity<List<SensorDataResource>> getDeviceSensorData(
+            @Parameter(description = "Device identifier", example = "device_001")
             @PathVariable String deviceId) {
+        
         log.debug("Retrieving sensor data for device: {}", deviceId);
         
         List<SensorDataRecord> records = queryService.handle(new GetSensorDataByDeviceIdQuery(deviceId));
         List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
         
         return ResponseEntity.ok(resources);
-    }
-
-    /**
-     * Get sensor data by date range
-     * GET /api/v1/analytics/sensor-data/range
-     */
-    @GetMapping("/sensor-data/range")
-    @Operation(
-            summary = "Get sensor data by date range",
-            description = "Retrieve sensor data records within a specified date range."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data"),
-            @ApiResponse(responseCode = "400", description = "Invalid date range parameters")
-    })
-    public ResponseEntity<List<SensorDataResource>> getSensorDataByDateRange(
-            @Parameter(description = "Start date (ISO format)", example = "2025-11-01T00:00:00")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            
-            @Parameter(description = "End date (ISO format)", example = "2025-11-13T23:59:59")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        
-        log.debug("Retrieving sensor data between {} and {}", startDate, endDate);
-        
-        try {
-            List<SensorDataRecord> records = queryService.handle(
-                    new GetSensorDataByDateRangeQuery(startDate, endDate)
-            );
-            
-            List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
-            return ResponseEntity.ok(resources);
-            
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid date range: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
     }
 }
