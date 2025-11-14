@@ -1,5 +1,8 @@
 package pe.iotteam.plantcare.auth.interfaces.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -30,7 +33,11 @@ public class GoogleAuthController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/login")
+    @PostMapping("/web")
+    @Operation(
+            summary = "Iniciar sesión con Google (Web)",
+            description = "Autentica mediante OAuth Web de Google."
+    )
     public ResponseEntity<?> signInWithGoogle(@Valid @RequestBody GoogleSignInResource resource) {
         try {
             // convertir resource -> command
@@ -40,6 +47,42 @@ public class GoogleAuthController {
             String jwt = loginUserCommandService.handleGoogleSignIn(command.googleToken());
 
             // recuperar email desde el token para buscar el usuario
+            String email = jwtTokenProvider.getUsername(jwt);
+            var userOpt = userRepository.findByEmail(new Email(email));
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("User created but not found after creation");
+            }
+
+            var user = userOpt.get();
+            String id = user.getUserId() != null ? user.getUserId().toString() : null;
+
+            UserDto userDto = new UserDto(id, user.getEmail().value(), user.getUsername(), user.getRole().name());
+            AuthResponse response = new AuthResponse(jwt, "Bearer", userDto);
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authentication failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Bad request: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/mobile")
+    @Operation(
+            summary = "Iniciar sesión con Google (Mobile)",
+            description = "Autentica mediante token de Google Sign-In."
+    )
+    public ResponseEntity<?> signInWithGoogleMobile(@Valid @RequestBody GoogleSignInResource resource) {
+        try {
+            var command = GoogleSignInCommandFromResourceAssembler.toCommandFromResource(resource);
+
+            String jwt = loginUserCommandService.handleGoogleMobileSignIn(command.googleToken());
+
             String email = jwtTokenProvider.getUsername(jwt);
             var userOpt = userRepository.findByEmail(new Email(email));
             if (userOpt.isEmpty()) {
