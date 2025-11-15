@@ -33,11 +33,6 @@ public interface SensorDataRepository {
     List<SensorDataRecord> findByDeviceId(String deviceId);
     
     /**
-     * Find sensor data within a date range
-     */
-    List<SensorDataRecord> findByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
      * Find the latest record by timestamp
      */
     Optional<SensorDataRecord> findLatestRecord();

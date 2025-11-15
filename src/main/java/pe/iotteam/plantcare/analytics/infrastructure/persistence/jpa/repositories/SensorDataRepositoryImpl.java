@@ -54,13 +54,6 @@ public class SensorDataRepositoryImpl implements SensorDataRepository {
     }
 
     @Override
-    public List<SensorDataRecord> findByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return jpaRepository.findByDateRange(startDate, endDate).stream()
-                .map(SensorDataMapper::toDomain)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public Optional<SensorDataRecord> findLatestRecord() {
         return jpaRepository.findLatestRecord()
                 .map(SensorDataMapper::toDomain);

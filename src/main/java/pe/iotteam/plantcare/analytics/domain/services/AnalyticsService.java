@@ -3,7 +3,6 @@ package pe.iotteam.plantcare.analytics.domain.services;
 import pe.iotteam.plantcare.analytics.domain.model.aggregates.SensorDataRecord;
 import pe.iotteam.plantcare.analytics.domain.model.commands.IngestSensorDataCommand;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetAllSensorDataQuery;
-import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDateRangeQuery;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDeviceIdQuery;
 
 import java.util.List;
@@ -27,9 +26,4 @@ public interface AnalyticsService {
      * Handle query to get sensor data by device ID
      */
     List<SensorDataRecord> handle(GetSensorDataByDeviceIdQuery query);
-    
-    /**
-     * Handle query to get sensor data by date range
-     */
-    List<SensorDataRecord> handle(GetSensorDataByDateRangeQuery query);
 }

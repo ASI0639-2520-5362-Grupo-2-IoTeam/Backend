@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.iotteam.plantcare.analytics.domain.model.aggregates.SensorDataRecord;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetAllSensorDataQuery;
-import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDateRangeQuery;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDeviceIdQuery;
 import pe.iotteam.plantcare.analytics.infrastructure.persistence.jpa.repositories.SensorDataRepository;
 
@@ -44,20 +43,6 @@ public class SensorDataQueryService {
         log.debug("Retrieving sensor data for device: {}", query.deviceId());
         List<SensorDataRecord> records = repository.findByDeviceId(query.deviceId());
         log.debug("Found {} records for device {}", records.size(), query.deviceId());
-        return records;
-    }
-
-    /**
-     * Handle query to get sensor data by date range
-     */
-    public List<SensorDataRecord> handle(GetSensorDataByDateRangeQuery query) {
-        log.debug("Retrieving sensor data between {} and {}", 
-                 query.startDate(), query.endDate());
-        List<SensorDataRecord> records = repository.findByDateRange(
-                query.startDate(), 
-                query.endDate()
-        );
-        log.debug("Found {} records in date range", records.size());
         return records;
     }
 }

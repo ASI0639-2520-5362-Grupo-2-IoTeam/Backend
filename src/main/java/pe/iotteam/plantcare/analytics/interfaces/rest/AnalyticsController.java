@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +18,11 @@ import pe.iotteam.plantcare.analytics.domain.exceptions.DataIngestionException;
 import pe.iotteam.plantcare.analytics.domain.model.aggregates.SensorDataRecord;
 import pe.iotteam.plantcare.analytics.domain.model.commands.IngestSensorDataCommand;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetAllSensorDataQuery;
-import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDateRangeQuery;
 import pe.iotteam.plantcare.analytics.domain.model.queries.GetSensorDataByDeviceIdQuery;
 import pe.iotteam.plantcare.analytics.interfaces.rest.resources.IngestionResultResource;
 import pe.iotteam.plantcare.analytics.interfaces.rest.resources.SensorDataResource;
 import pe.iotteam.plantcare.analytics.interfaces.rest.transform.SensorDataResourceAssembler;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -50,7 +47,7 @@ public class AnalyticsController {
 
     /**
      * Trigger manual data import from external API
-     * POST /api/v1/analytics/imports
+     * POST /api/v1/analytics/data-imports
      */
     @PostMapping("/imports")
     @Operation(
@@ -79,54 +76,28 @@ public class AnalyticsController {
 
     /**
      * Get all sensor data records
-     * GET /api/v1/analytics/data
-     * 
-     * Supports optional query parameters for filtering:
-     * - start: Filter by start date
-     * - end: Filter by end date
+     * GET /api/v1/analytics/sensor-data
      */
     @GetMapping("/data")
     @Operation(
-            summary = "Get sensor data",
-            description = "Retrieve sensor data records from analytics database. Supports optional date range filtering via query parameters."
+            summary = "Get all sensor data",
+            description = "Retrieve all sensor data records from analytics database."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data"),
-            @ApiResponse(responseCode = "400", description = "Invalid query parameters")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data")
     })
-    public ResponseEntity<List<SensorDataResource>> getSensorData(
-            @Parameter(description = "Start date for filtering (optional, ISO format)", example = "2025-11-01T00:00:00")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            
-            @Parameter(description = "End date for filtering (optional, ISO format)", example = "2025-11-13T23:59:59")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+    public ResponseEntity<List<SensorDataResource>> getAllSensorData() {
+        log.debug("Retrieving all sensor data");
         
-        log.debug("Retrieving sensor data with filters - start: {}, end: {}", start, end);
+        List<SensorDataRecord> records = queryService.handle(new GetAllSensorDataQuery());
+        List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
         
-        try {
-            List<SensorDataRecord> records;
-            
-            // If both dates provided, filter by date range
-            if (start != null && end != null) {
-                records = queryService.handle(new GetSensorDataByDateRangeQuery(start, end));
-            } 
-            // Otherwise, get all records
-            else {
-                records = queryService.handle(new GetAllSensorDataQuery());
-            }
-            
-            List<SensorDataResource> resources = SensorDataResourceAssembler.toResourceList(records);
-            return ResponseEntity.ok(resources);
-            
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid query parameters: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(resources);
     }
 
     /**
-     * Get sensor data for a specific device (sub-resource pattern)
-     * GET /api/v1/analytics/devices/{deviceId}/data
+     * Get sensor data for a specific device
+     * GET /api/v1/analytics/devices/{deviceId}/sensor-data
      */
     @GetMapping("/devices/{deviceId}/data")
     @Operation(
@@ -134,8 +105,7 @@ public class AnalyticsController {
             description = "Retrieve all sensor data records for a specific device."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data"),
-            @ApiResponse(responseCode = "404", description = "Device not found or no data available")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved sensor data")
     })
     public ResponseEntity<List<SensorDataResource>> getDeviceSensorData(
             @Parameter(description = "Device identifier", example = "device_001")
