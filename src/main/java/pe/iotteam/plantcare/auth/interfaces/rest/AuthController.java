@@ -20,7 +20,7 @@ import pe.iotteam.plantcare.auth.interfaces.rest.transform.UserResponse;
 import pe.iotteam.plantcare.subscription.application.internal.commandservices.SubscriptionCommandService;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/authentication")
 @Tag(
         name = "Authentication",
         description = "Endpoints responsables del registro, autenticación y generación de tokens para los usuarios."
@@ -50,7 +50,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos enviados en la solicitud"),
             @ApiResponse(responseCode = "409", description = "El email ya está registrado en el sistema")
     })
-    @PostMapping("/register")
+    @PostMapping("/signup")
     public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
         UserAccount user = registerService.handle(
                 request.email(),
@@ -79,7 +79,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Credenciales incorrectas o usuario no autorizado"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    @PostMapping("/login")
+    @PostMapping("/signin")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         var user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
