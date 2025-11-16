@@ -32,11 +32,9 @@ public class PlantRepositoryImpl implements PlantRepository {
 
     @Override
     public List<Plant> findByUserId(UUID userId) {
-        // Logging to help debug why queries by userId return empty
         log.debug("PlantRepositoryImpl.findByUserId called with userId={}", userId);
         var entities = jpaRepository.findByUserId(userId.toString());
         log.debug("PlantJpaRepository.findByUserId returned {} entities for userId={}", entities.size(), userId);
-        // Log each found entity's id and stored userId string for debugging
         entities.forEach(e -> log.debug("Found entity: id={} userIdInDb={}", e.getId(), e.getUserId()));
         return entities.stream()
                 .map(PlantMapper::toDomain)
@@ -45,14 +43,12 @@ public class PlantRepositoryImpl implements PlantRepository {
 
     @Override
     public Plant save(Plant plant) {
-        // If the plant has an ID, it's an update. Otherwise, it's a new plant.
+        // Recuperar la entidad existente si hay id, caso contrario crear nueva
         PlantEntity entity = plant.getId() != null ?
-                jpaRepository.findById(plant.getId()).orElse(new PlantEntity()) :
-                new PlantEntity();
+                jpaRepository.findById(plant.getId()).orElse(PlantEntity.create()) :
+                PlantEntity.create();
 
-        // Map all data from the domain object to the entity
         PlantMapper.updateEntityFromDomain(entity, plant);
-
         var savedEntity = jpaRepository.save(entity);
         return PlantMapper.toDomain(savedEntity);
     }
@@ -62,4 +58,13 @@ public class PlantRepositoryImpl implements PlantRepository {
         jpaRepository.deleteById(id.plantId());
     }
 
+    @Override
+    public boolean existsById(PlantId id) {
+        return jpaRepository.existsById(id.plantId());
+    }
+
+    @Override
+    public void deleteById(PlantId id) {
+        jpaRepository.deleteById(id.plantId());
+    }
 }

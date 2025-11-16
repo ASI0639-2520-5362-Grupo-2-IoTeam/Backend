@@ -36,21 +36,21 @@ public class PlantMapper {
     }
 
     public static Plant toDomain(PlantEntity entity) {
-        return new Plant(
-                entity.getId(),
-                new UserId(UUID.fromString(entity.getUserId())),
-                entity.getName(),
-                entity.getType(),
-                entity.getImgUrl(),
-                entity.getBio(),
-                entity.getLocation(),
-                PlantStatus.valueOf(entity.getStatus()),
-                entity.getLastWatered(),
-                entity.getNextWatering(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt(),
-                entity.getMetrics().stream().map(PlantMetricsMapper::toDomain).collect(Collectors.toList()),
-                entity.getWateringLogs().stream().map(WateringLogMapper::toDomain).collect(Collectors.toList())
-        );
+        return Plant.builder()
+                .id(entity.getId())
+                .userId(new UserId(UUID.fromString(entity.getUserId())))
+                .name(entity.getName())
+                .type(entity.getType())
+                .imgUrl(entity.getImgUrl())
+                .bio(entity.getBio())
+                .location(entity.getLocation())
+                .status(PlantStatus.valueOf(entity.getStatus()))
+                .lastWatered(entity.getLastWatered())
+                .nextWatering(entity.getNextWatering())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .metrics(entity.getMetrics().stream().map(PlantMetricsMapper::toDomain).collect(Collectors.toList()))
+                .wateringLogs(entity.getWateringLogs().stream().map(WateringLogMapper::toDomain).collect(Collectors.toList()))
+                .build();
     }
 }

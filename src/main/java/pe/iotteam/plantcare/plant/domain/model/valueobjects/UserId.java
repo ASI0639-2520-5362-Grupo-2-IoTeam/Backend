@@ -4,34 +4,34 @@ import jakarta.persistence.Embeddable;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Represents a User's unique identifier as a Value Object.
+ * Using a record simplifies the implementation, making it immutable and concise.
+ */
 @Embeddable
-public class UserId {
+public record UserId(UUID value) {
 
-    private UUID value;
-
-    protected UserId() {}
-
-    public UserId(UUID value) {
-        this.value = Objects.requireNonNull(value);
+    /**
+     * Compact constructor to enforce validation rules.
+     * Ensures the underlying UUID value is never null.
+     */
+    public UserId {
+        Objects.requireNonNull(value, "The user ID value cannot be null.");
     }
 
-    public UUID value() {
-        return value;
+    /**
+     * Convenience constructor to create a UserId from a String.
+     * @param userId The string representation of the UUID.
+     */
+    public UserId(String userId) {
+        this(UUID.fromString(userId));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UserId)) return false;
-        UserId userId = (UserId) o;
-        return value.equals(userId.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
+    /**
+     * Overrides the default record toString() to return only the UUID value as a String.
+     * This can be useful for serialization or logging.
+     * @return The string representation of the UUID.
+     */
     @Override
     public String toString() {
         return value.toString();

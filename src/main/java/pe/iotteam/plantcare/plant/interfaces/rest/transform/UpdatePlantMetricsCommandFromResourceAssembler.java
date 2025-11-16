@@ -7,10 +7,10 @@ public class UpdatePlantMetricsCommandFromResourceAssembler {
     public static UpdatePlantMetricsCommand toCommand(Long plantId, UpdatePlantMetricsResource resource) {
         return new UpdatePlantMetricsCommand(
                 plantId,
-                resource.temperature(),
-                resource.humidity(),
-                resource.light(),
-                resource.soil_humidity()
+                resource.airTemperatureCelsius(),
+                resource.airHumidityPercent(),
+                resource.luminosityLux(),
+                resource.soilMoisturePercent()
         );
     }
 }

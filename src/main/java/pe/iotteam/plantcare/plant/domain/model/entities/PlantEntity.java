@@ -1,6 +1,7 @@
 package pe.iotteam.plantcare.plant.domain.model.entities;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import java.util.List;
 @Table(name = "plants")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlantEntity {
 
     @Id
@@ -42,17 +43,19 @@ public class PlantEntity {
     private LocalDateTime lastWatered;
     private LocalDateTime nextWatering;
 
-    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PlantMetricsEntity> metrics = new ArrayList<>();
 
-    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WateringLogEntity> wateringLogs = new ArrayList<>();
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    public PlantEntity(String userId, String name, String type, String imgUrl,
-                       String status, String bio, String location) {
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    public PlantEntity(String userId, String name, String type, String imgUrl, String status, String bio, String location) {
         this.userId = userId;
         this.name = name;
         this.type = type;
@@ -60,7 +63,42 @@ public class PlantEntity {
         this.status = status;
         this.bio = bio;
         this.location = location;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Factory para creación explícita manteniendo el constructor protegido por defecto
+    public static PlantEntity create() {
+        return new PlantEntity();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // Helper methods for bidirectional relationship
+    public void addMetric(PlantMetricsEntity metric) {
+        metrics.add(metric);
+        metric.setPlant(this);
+    }
+
+    public void removeMetric(PlantMetricsEntity metric) {
+        metrics.remove(metric);
+        metric.setPlant(null);
+    }
+
+    public void addWateringLog(WateringLogEntity wateringLog) {
+        wateringLogs.add(wateringLog);
+        wateringLog.setPlant(this);
+    }
+
+    public void removeWateringLog(WateringLogEntity wateringLog) {
+        wateringLogs.remove(wateringLog);
+        wateringLog.setPlant(null);
     }
 }

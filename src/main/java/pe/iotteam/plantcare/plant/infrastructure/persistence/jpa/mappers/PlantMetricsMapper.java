@@ -6,26 +6,27 @@ import pe.iotteam.plantcare.plant.domain.model.valueobjects.PlantId;
 
 public class PlantMetricsMapper {
     public static PlantMetrics toDomain(PlantMetricsEntity entity) {
-        return new PlantMetrics(
-                entity.getId(),
-                new PlantId(entity.getPlant().getId()),
-                entity.getDeviceId(),
-                entity.getTemperature(),
-                entity.getHumidity(),
-                entity.getLight(),
-                entity.getSoilHumidity(),
-                entity.getCreatedAt()
-        );
+        return PlantMetrics.builder()
+                .id(entity.getId())
+                .plantId(new PlantId(entity.getPlant().getId()))
+                .deviceId(entity.getDeviceId())
+                .temperature(entity.getTemperature())
+                .humidity(entity.getHumidity())
+                .light(entity.getLight())
+                .soilHumidity(entity.getSoilHumidity())
+                .createdAt(entity.getCreatedAt())
+                .build();
     }
 
     public static PlantMetricsEntity toEntity(PlantMetrics domain) {
-        PlantMetricsEntity entity = new PlantMetricsEntity();
+        PlantMetricsEntity entity = new PlantMetricsEntity(
+                domain.getDeviceId(),
+                domain.getTemperature(),
+                domain.getHumidity(),
+                domain.getLight(),
+                domain.getSoilHumidity()
+        );
         // The plant entity will be set in the service
-        entity.setDeviceId(domain.getDeviceId());
-        entity.setTemperature(domain.getTemperature());
-        entity.setHumidity(domain.getHumidity());
-        entity.setLight(domain.getLight());
-        entity.setSoilHumidity(domain.getSoilHumidity());
         entity.setCreatedAt(domain.getCreatedAt());
         return entity;
     }

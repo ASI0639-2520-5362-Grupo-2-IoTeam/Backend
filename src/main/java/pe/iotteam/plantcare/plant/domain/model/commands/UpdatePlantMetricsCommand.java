@@ -5,6 +5,6 @@ public record UpdatePlantMetricsCommand(
         Integer temperature,
         Double humidity,
         Integer light,
-        Integer soil_humidity
+        Integer soilHumidity
 ) {
 }
